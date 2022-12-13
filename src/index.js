@@ -16,7 +16,7 @@ function verifyIfExistsAccountCPF(req, res, next) {
   if (!customer) {
     return res.status(400).json({ error: 'Customer not found' });
   }
-  req.customer = req;
+  req.customer = customer;
   next();
 }
 
@@ -43,6 +43,22 @@ app.post('/account', (req, res) => {
 app.get('/statement/', verifyIfExistsAccountCPF, (req, res) => {
   const { customer } = req;
   return res.json(customer.statement);
+});
+
+//deposit operation
+app.post('/deposit', verifyIfExistsAccountCPF, (req, res) => {
+  const { description, amount } = req.body;
+  const { customer } = req;
+
+  const statementOperation = {
+    description,
+    amount,
+    created_at: new Date(),
+    type: 'credit',
+  };
+
+  customer.statement.push(statementOperation);
+  return res.status(201).send();
 });
 
 app.listen(3333);
